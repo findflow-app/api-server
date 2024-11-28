@@ -1,0 +1,6 @@
+flask
+waitress
+python-dotenv
+mysql-connector-python
+bcrypt
+pyjwt
