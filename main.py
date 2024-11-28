@@ -6,8 +6,7 @@ import mysql.connector
 import bcrypt
 import ssl
 import jwt
-from register import register
-from auth import auth
+from auth import auth, register
 
 
 load_dotenv()
@@ -31,7 +30,7 @@ def auth_endpoint():
     if (email is None) or (password is None):
         return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
     else:
-        return auth(email, password)
+        return jsonify(auth(email, password))
 
 @app.route('/register', methods=['POST'])
 def register_endpoint():
@@ -44,8 +43,7 @@ def register_endpoint():
     if (email is None) or (password is None) or (name is None):
         return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
     else:
-        return register(email, password, name, phone_number)
-        auth(email, password)
+       return register(email, password, name, phone_number)
 """@app.route('/validation', methods=['POST'])
 def handle_validation_post():
     data = request.get_json()

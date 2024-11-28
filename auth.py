@@ -37,7 +37,8 @@ def auth(email, password):
             'user_id': result[0]
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-        return jsonify({'status': 'success', 'token': token}), 200
+        return token
+
 
 def register(email, password, name, phone_number=None):
     conn = mysql.connector.connect(**db_config)
@@ -60,6 +61,6 @@ def register(email, password, name, phone_number=None):
         conn.commit()
         cursor.close()
         conn.close()
-        return auth(email, password)
 
-
+        token = auth(email, password)
+    return jsonify({'status': 'success', 'message': 'User registered successfully', 'token': token})
