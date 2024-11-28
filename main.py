@@ -6,7 +6,7 @@ import mysql.connector
 import bcrypt
 import ssl
 import jwt
-from auth import login, register
+from auth import login, register, auth
 from flask_cors import CORS, cross_origin
 
 
@@ -59,6 +59,14 @@ def register_endpoint():
         return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
     else:
        return register(email, password, name, phone_number)
+
+
+@app.route('/auth', methods=['POST'])
+@cross_origin()
+def auth_endpoint():
+    data = request.get_json()
+    token = data.get('token')
+    return auth(token)
 """@app.route('/validation', methods=['POST'])
 def handle_validation_post():
     data = request.get_json()
