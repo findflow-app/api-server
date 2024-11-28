@@ -6,12 +6,19 @@ import mysql.connector
 import bcrypt
 import ssl
 import jwt
-from auth import auth, register
+from auth import login, register
+from flask_cors import CORS, cross_origin
 
 
 load_dotenv()
 
+
+
 app = Flask(__name__)
+cors = CORS(app)
+
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 conn = None
  
 # DB
@@ -21,8 +28,9 @@ db_config = {
     'password': os.getenv('DB_PASS'),
     'database': os.getenv('DB_NAME')
 }
-@app.route('/auth', methods=['POST'])
-def auth_endpoint():
+@app.route('/login', methods=['POST'])
+@cross_origin()
+def login_endpoint():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
@@ -30,9 +38,16 @@ def auth_endpoint():
     if (email is None) or (password is None):
         return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
     else:
-        return jsonify(auth(email, password))
+        token = login(email, password) 
+        if(token == 'error'):
+            return jsonify({'status': 'error', 'message': 'User not found'}), 401
+        else:
+            return jsonify({'status': 'success', 'token': token }), 200           
+
+
 
 @app.route('/register', methods=['POST'])
+@cross_origin()
 def register_endpoint():
     data = request.get_json()
     email = data.get('email')

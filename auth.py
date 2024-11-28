@@ -20,7 +20,7 @@ db_config = {
     'database': os.getenv('DB_NAME')
 }
 
-def auth(email, password):
+def login(email, password):
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
     sql = "SELECT id, password FROM users WHERE email = %s"
@@ -30,7 +30,7 @@ def auth(email, password):
     conn.close()
 
     if result is None or not bcrypt.checkpw(password.encode('utf-8'), result[1].encode('utf-8')):
-        return jsonify({'status': 'error', 'message': 'User auth failed: wrong email or password'}), 401
+        return 'error'
     else:
         #JWT 
         payload = {
@@ -62,5 +62,27 @@ def register(email, password, name, phone_number=None):
         cursor.close()
         conn.close()
 
-        token = auth(email, password)
+        token = login(email, password)
     return jsonify({'status': 'success', 'message': 'User registered successfully', 'token': token})
+
+def auth(token):
+    decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+    user_id = decoded.get('user_id')    
+    sql = "SELECT * FROM users WHERE id = %s"
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_id,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    id = result[0]
+    email = result[1]
+    name = result[3]
+    phone_number = result[4]
+    return jsonify({'id': id, 'email': email, 'name': name, 'phone_number': phone_number}), 200
+
+
+
+
+
+

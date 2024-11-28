@@ -4,3 +4,4 @@ python-dotenv
 mysql-connector-python
 bcrypt
 pyjwt
+flask-cors
