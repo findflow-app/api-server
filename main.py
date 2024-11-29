@@ -88,14 +88,6 @@ def log_user_handle():
     beacon_id = data.get('beacon_id')
     return log_user(token, beacon_id)
 
-@app.route('/beacon', methods=['POST'])
-@cross_origin()
-def get_beacon_endpoint():
-    data = request.get_json()
-    token = data.get('token')
-    beacon_mac = data.get('beacon_mac')
-    return get_beacon(token, beacon_mac)
-
 @app.route('/search', methods=['POST'])
 @cross_origin()
 def search_user_endpoint():
