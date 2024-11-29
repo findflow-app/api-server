@@ -9,7 +9,6 @@ import jwt
 from auth import *
 from log_user import *
 from flask_cors import CORS, cross_origin
-from get_beacon import get_beacon
 from beacons import *
 
 

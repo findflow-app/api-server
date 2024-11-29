@@ -73,8 +73,11 @@ def get_user_position(token, user_id):
         return jsonify({'status': 'error', 'message': 'Invalid token'}), 401
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
-    cursor.execute("SELECT log_user.beacon_mac, beacons.type,  FROM log_user WHERE userID = %s ORDER BY time DESC LIMIT 1", (user_id,))
+    cursor.execute("SELECT log_user.beacon_mac, beacons.type FROM log_user INNER JOIN beacons ON log_user.beacon_mac = beacons.mac_address WHERE log_user.userID = %s ORDER BY time DESC LIMIT 1", (user_id,))
     result = cursor.fetchone()
     cursor.close()
     conn.close()
-    return jsonify({'status': 'success', 'mac': result}), 200
+    if result:
+        return jsonify({'status': 'success', 'mac': result[0], 'type' : result[1]}), 200
+    else:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
