@@ -26,7 +26,7 @@ db_config = {
 def log_user(token, beacon_mac):
     decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
     user_id = decoded.get('user_id')
-    sql = "SELECT beacon_mac FROM log_user WHERE userID = %s ORDER BY time LIMIT 1"
+    sql = "SELECT beacon_mac FROM log_user WHERE userID = %s ORDER BY time DESC LIMIT 1"
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
     cursor.execute(sql, (user_id,))
@@ -36,6 +36,13 @@ def log_user(token, beacon_mac):
             cursor.close()
             conn.close()
             return jsonify({'status': 'error', 'message': 'Already logged'}), 200
+        else:
+            cursor.execute("INSERT INTO log_user (userID, beacon_mac) VALUES (%s, %s)", (user_id, beacon_mac))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({'status': 'success'}), 200
+    else:
         cursor.execute("INSERT INTO log_user (userID, beacon_mac) VALUES (%s, %s)", (user_id, beacon_mac))
         conn.commit()
         cursor.close()
@@ -59,3 +66,15 @@ def search_user(token, name_string):
         cursor.close()
         conn.close()
         return jsonify({'status': 'success', 'result': result}), 200
+    
+def get_user_position(token, user_id):
+    userdata = auth(token)
+    if userdata == "error" or userdata is None:
+        return jsonify({'status': 'error', 'message': 'Invalid token'}), 401
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("SELECT log_user.beacon_mac, beacons.type,  FROM log_user WHERE userID = %s ORDER BY time DESC LIMIT 1", (user_id,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return jsonify({'status': 'success', 'mac': result}), 200

@@ -21,20 +21,29 @@ db_config = {
 }
 
 def beacon_names(array_mac):
-    array_name = []
+    array_info = []
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
     for mac in array_mac:
-        cursor.execute("SELECT type FROM beacons WHERE mac_address = %s", (mac,))
+        cursor.execute("SELECT type,data,data_type FROM beacons WHERE mac_address = %s", (mac,))
         result = cursor.fetchone()
         if result:
-            array_name.append(result[0])
+            array_info.append({
+                'mac': mac,
+                'name': result[0],
+                'data_type': result[2],
+                'data': result[1]
+            })
         else:
-            array_name.append(None)
+            array_info.append({
+                'mac': mac,
+                'name': None,
+                'data_type': None,
+                'data': None
+            })
     cursor.close()
     conn.close()
-    response = []
-    for mac, name in zip(array_mac, array_name):
-        response.append({ mac : name, )
+    
+    response = {info['mac']: {'name': info['name'], 'data_type': info['data_type'], 'data': info['data']} for info in array_info}
     
     return jsonify(response), 200

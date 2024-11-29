@@ -112,6 +112,14 @@ def beacon_names_endpoint():
     array_mac = data.get('array_mac')
     return beacon_names(array_mac)
 
+@app.route('/get_position', methods=['POST'])
+@cross_origin()
+def get_user_position_endpoint():
+    data = request.get_json()
+    token = data.get('token')
+    user_id = data.get('user_id')
+    return get_user_position(token, user_id)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
     os.system('cls' if os.name == 'nt' else 'clear')
