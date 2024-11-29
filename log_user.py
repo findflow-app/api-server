@@ -77,8 +77,9 @@ def get_user_position(token, user_id):
     result = cursor.fetchone()
     cursor.close()
     conn.close()
-    formatted_time = result[2].strftime('%Y-%m-%d %H:%M:%S')
+    datetime_object = result[2]
+    formatted_date = datetime_object.strftime("%Y-%m-%d %H:%M:%S")
     if result:
-        return jsonify({'status': 'success', 'mac': result[0], 'type' : result[1], 'timestamp' : formatted_time}), 200
+        return jsonify({'status': 'success', 'mac': result[0], 'type' : result[1], 'timestamp' : formatted_date}), 200
     else:
         return jsonify({'status': 'error', 'message': 'User not found'}), 404
