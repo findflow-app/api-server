@@ -1,11 +1,31 @@
 from auth import auth
+from flask import jsonify
+import mysql.connector
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+# DB
+db_config = {
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASS'),
+    'database': os.getenv('DB_NAME')
+}
+
+
 
 
 def get_beacon(token, beacon_mac):
     userdata = auth(token)
+    print(1)
     if userdata == "error" or userdata is None:
         return jsonify({'status': 'error', 'message': 'Invalid token'}), 401
+    print(1.1)
     user_id = userdata['id']
+    print(2)
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
     sql = "SELECT * FROM beacons WHERE mac_address = %s"
@@ -13,11 +33,12 @@ def get_beacon(token, beacon_mac):
     result = cursor.fetchone()
     cursor.close()
     conn.close()
+    print(3)
     if result is None:
         return jsonify({'status': 'error', 'message': 'Beacon not found'}), 404
     else:
         beacon_ID = result[0]
-
+        print(4)
         institution_id = result[2]
         beacon_lat = result[3]
         beacon_lon = result[4]
@@ -49,7 +70,7 @@ def get_beacon(token, beacon_mac):
             institution_address = result[5]
             institution_zip_code = result[6]
             institution_country = result[7]
-
+            print(5)
             sql = "SELECT * FROM areas WHERE id = %i"
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -62,7 +83,7 @@ def get_beacon(token, beacon_mac):
             area_y = result[3]
             area_width = result[5]
             area_height = result[6]
-
+            print(6)
             sql = "SELECT * FROM rooms WHERE id = %i"
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -74,7 +95,7 @@ def get_beacon(token, beacon_mac):
             room_description = result[2]
             room_organization = result[3]
             room_floor = result[4]
-
+            print(7)
             sql = "SELECT * FROM conn_events_rooms WHERE room = %i"
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -84,6 +105,7 @@ def get_beacon(token, beacon_mac):
             conn.close()
             events = []
             for event in result:
+                print(7)
                 event_id = event[1]
                 sql = "SELECT * FROM events WHERE id = %i"
                 conn = mysql.connector.connect(**db_config)

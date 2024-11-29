@@ -6,8 +6,11 @@ import mysql.connector
 import bcrypt
 import ssl
 import jwt
-from auth import login, register, auth
+from auth import *
+from log_user import *
 from flask_cors import CORS, cross_origin
+from get_beacon import get_beacon
+from beacons import *
 
 
 load_dotenv()
@@ -67,92 +70,6 @@ def auth_endpoint():
     data = request.get_json()
     token = data.get('token')
     return auth(token)
-"""@app.route('/validation', methods=['POST'])
-def handle_validation_post():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    key = data.get('api_key')
-
-    if not email or not password or not key:
-        return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
-
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-
-    sql = "SELECT ID, api_info FROM programs WHERE api_key = %s"
-    cursor.execute(sql, (key,))
-
-    app_result = cursor.fetchone()
-    cursor.close()
-
-    if app_result is None:
-        return jsonify({'status': 'error', 'message': 'API key not found'}), 401
-    else:
-        sql = "SELECT key, valid_to, users.active, license.active, acces, passwd FROM license RIGHT JOIN users ON license.user_ID = users.ID WHERE email = %s AND program = %s"
-        cursor = conn.cursor()
-        cursor.execute(sql, (email, app_result[0]))
-
-        result = cursor.fetchone()
-        cursor.close()
-
-        if result is None or not bcrypt.checkpw(password.encode('utf-8'), result[5].encode('utf-8')):
-            return jsonify({'status': 'error', 'message': 'User not found'}), 601
-        else:
-            if (result[1] is not None):
-                if(result[1] < datetime.now().date()):
-                    return jsonify({'status': 'error', 'message': 'License expired'}), 602
-            if(result[2] == 0):
-                return jsonify({'status': 'error', 'message': 'User not active'}), 603
-            if(result[3] == 0):
-                return jsonify({'status': 'error', 'message': 'License not active'}), 604
-
-            return jsonify({
-                    'status': 'success',
-                    'key': result[0],
-                    'expire': result[1].isoformat() if result[1] else None,
-                    'access': result[4],
-                    'static': app_result[1],
-                    'time': datetime.now().isoformat() 
-            }), 200"""
-
-"""@app.route('/grouplist', methods=['POST'])
-def handle_post_group():
-    data = request.json
-    key = data.get('api_key')
-
-    if not key:
-        return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
-
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-
-    sql = "SELECT ID, api_info FROM programs WHERE api_key = %s"
-    cursor.execute(sql, (key,))
-
-    app_result = cursor.fetchone()
-    cursor.close()
-
-    if app_result is None:
-        return jsonify({'status': 'error', 'message': 'API key not found'}), 401
-    else:
-        sql = "SELECT group FROM license WHERE program = %s"
-        cursor = conn.cursor()
-        cursor.execute(sql, (app_result[0],))
-
-        result = cursor.fetchall()
-        cursor.close()
-
-        if result is None:
-            return jsonify({'status': 'error', 'message': 'Group not found'}), 605
-        else:
-            return jsonify({
-                'header': {
-                    'status': 'success',
-                    'time': datetime.now.value,
-                },
-                'groups': result
-            }), 200"""
 
 @app.route('/info', methods=['GET'])
 def test():
@@ -163,6 +80,37 @@ def test():
 
 """@app.route('/beacons', methods=['GET'])
 def get_beacons():"""
+
+@app.route('/log_user', methods=['POST'])
+@cross_origin()
+def log_user_handle():
+    data = request.get_json()
+    token = data.get('token')
+    beacon_id = data.get('beacon_id')
+    return log_user(token, beacon_id)
+
+@app.route('/beacon', methods=['POST'])
+@cross_origin()
+def get_beacon_endpoint():
+    data = request.get_json()
+    token = data.get('token')
+    beacon_mac = data.get('beacon_mac')
+    return get_beacon(token, beacon_mac)
+
+@app.route('/search', methods=['POST'])
+@cross_origin()
+def search_user_endpoint():
+    data = request.get_json()
+    token = data.get('token')
+    name_string = data.get('name_string')
+    return search_user(token, name_string)
+
+@app.route('/beacon_names', methods=['POST'])
+@cross_origin()
+def beacon_names_endpoint():
+    data = request.get_json()
+    array_mac = data.get('array_mac')
+    return beacon_names(array_mac)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
